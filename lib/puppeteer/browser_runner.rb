@@ -27,7 +27,7 @@ class Puppeteer::BrowserRunner
           [executable_path]
         end
       if args.include?('--remote-debugging-pipe')
-        @writable_stream, @readable_stream = IO.pipe
+        @readable_stream, @writable_stream = IO.pipe
         stdin, @stdout, @stderr, @thread = Open3.popen3(env, executable_path, *args, { close_others: false, 3 => @writable_stream, 4 => @readable_stream })
       else
         stdin, @stdout, @stderr, @thread = Open3.popen3(env, executable_path, *args)
