@@ -41,6 +41,7 @@ RSpec.configure do |config|
   launch_options = {
     product: Puppeteer.env.product,
     executable_path: ENV['PUPPETEER_EXECUTABLE_PATH_RSPEC'],
+    pipe: true
   }.compact
   if Puppeteer.env.debug? && !Puppeteer.env.ci?
     launch_options[:headless] = false

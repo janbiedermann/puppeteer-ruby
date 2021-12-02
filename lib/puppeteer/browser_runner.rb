@@ -26,8 +26,12 @@ class Puppeteer::BrowserRunner
         else
           [executable_path]
         end
-
-      stdin, @stdout, @stderr, @thread = Open3.popen3(env, executable_path, *args)
+      if args.include?('--remote-debugging-pipe')
+        @writable_stream, @readable_stream = IO.pipe
+        stdin, @stdout, @stderr, @thread = Open3.popen3(env, executable_path, *args, { close_others: false, 3 => @writable_stream, 4 => @readable_stream })
+      else
+        stdin, @stdout, @stderr, @thread = Open3.popen3(env, executable_path, *args)
+      end
       stdin.close
       @pid = @thread.pid
     rescue Errno::ENOENT => err
@@ -45,7 +49,7 @@ class Puppeteer::BrowserRunner
       @thread.join
     end
 
-    attr_reader :stdout, :stderr, :spawnargs
+    attr_reader :stdout, :stderr, :spawnargs, :writable_stream, :readable_stream
   end
 
   class LaunchError < StandardError
@@ -154,7 +158,8 @@ class Puppeteer::BrowserRunner
       transport = Puppeteer::WebSocketTransport.create(browser_ws_endpoint)
       @connection = Puppeteer::Connection.new(browser_ws_endpoint, transport, slow_mo)
     else
-      raise NotImplementedError.new('PipeTransport is not yet implemented')
+      transport = Puppeteer::PipeTransport.new(@proc.writable_stream, @proc.readable_stream)
+      @connection = Puppeteer::Connection.new(browser_ws_endpoint, transport, slow_mo)
     end
 
     @connection

@@ -62,6 +62,7 @@ require 'puppeteer/version'
 require 'puppeteer/wait_task'
 require 'puppeteer/web_socket'
 require 'puppeteer/web_socket_transport'
+require 'puppeteer/pipe_transport'
 
 # subclasses
 require 'puppeteer/element_handle'
@@ -71,7 +72,7 @@ module Puppeteer
   @puppeteer ||= ::Puppeteer::Puppeteer.new(
     project_root: __dir__,
     preferred_revision: '706915',
-    is_puppeteer_core: true,
+    is_puppeteer_core: true
   ).tap do |instance|
     instance.public_methods(false).each do |method_name|
       define_singleton_method(method_name) do |*args, **kwargs, &block|
